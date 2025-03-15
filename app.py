@@ -7,10 +7,13 @@ import os
 import pickle
 import librosa
 import tempfile
-import yt_dlp
+from pytube import YouTube
+import shutil
+from urllib.request import urlopen
+import io
+import requests
 from sklearn.preprocessing import LabelEncoder
 from tensorflow.keras.models import load_model
-import io
 from pathlib import Path
 
 # Set page config
@@ -187,29 +190,38 @@ def smooth_predictions(predictions, confidences=None, window_size=5):
 # Function to download and extract audio from YouTube video
 def download_youtube_audio(youtube_url):
     """
-    Download and extract audio from YouTube video
+    Download and extract audio from YouTube video using pytube
+    (no FFmpeg required)
     """
-    # Create temporary file
+    # Create temporary directory
     temp_dir = tempfile.mkdtemp()
-    temp_file = os.path.join(temp_dir, 'audio.mp3')
+    temp_file = os.path.join(temp_dir, 'audio.mp4')
     
-    # Download YouTube video
-    ydl_opts = {
-        'format': 'bestaudio/best',
-        'outtmpl': temp_file,
-        'postprocessors': [{
-            'key': 'FFmpegExtractAudio',
-            'preferredcodec': 'mp3',
-            'preferredquality': '192',
-        }],
-        'noplaylist': True,
-    }
-    
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(youtube_url, download=True)
-        video_title = info.get('title', 'YouTube Video')
-    
-    return temp_file, video_title
+    try:
+        # Download YouTube video audio stream
+        st.info("Connecting to YouTube...")
+        yt = YouTube(youtube_url)
+        video_title = yt.title
+        
+        st.info(f"Downloading audio from: {video_title}")
+        # Get the audio stream with highest quality
+        audio_stream = yt.streams.filter(only_audio=True).order_by('abr').desc().first()
+        
+        if not audio_stream:
+            raise Exception("No audio stream found for this video")
+        
+        # Download the file
+        audio_file = audio_stream.download(output_path=temp_dir)
+        
+        # Rename to temp_file path if needed
+        if audio_file != temp_file:
+            shutil.move(audio_file, temp_file)
+        
+        return temp_file, video_title
+        
+    except Exception as e:
+        st.error(f"Error downloading YouTube video: {str(e)}")
+        raise e
 
 # Function to load model and label encoder
 @st.cache_resource
@@ -327,7 +339,10 @@ def trim_audio(audio_path, max_duration=300):
     
     # Create temporary file for trimmed audio
     trimmed_path = os.path.join(tempfile.mkdtemp(), 'trimmed_audio.wav')
-    librosa.output.write_wav(trimmed_path, y_trimmed, sr)
+    
+    # Use soundfile instead of librosa.output.write_wav (which is deprecated)
+    import soundfile as sf
+    sf.write(trimmed_path, y_trimmed, sr)
     
     return trimmed_path
 
