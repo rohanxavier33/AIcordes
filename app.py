@@ -353,8 +353,8 @@ st.sidebar.title("Options")
 input_source = st.sidebar.radio("Select input source:", ("Upload Audio File", "YouTube URL"))
 
 # Model paths
-model_path = st.sidebar.text_input("Model path:", "models/best_chord_model.keras")
-encoder_path = st.sidebar.text_input("Encoder path:", "models/chord_recognition_encoder.pkl")
+model_path = st.sidebar.text_input("Model path:", "results/best_chord_model.keras")
+encoder_path = st.sidebar.text_input("Encoder path:", "results/chord_recognition_encoder.pkl")
 
 # Advanced options
 with st.sidebar.expander("Advanced Options"):
