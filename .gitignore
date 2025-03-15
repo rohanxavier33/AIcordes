@@ -1,6 +1,4 @@
 data/
 .DS_Store
 zipped_data/
-models/
-results/
 logs/

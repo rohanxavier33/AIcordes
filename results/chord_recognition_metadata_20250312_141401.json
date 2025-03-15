@@ -1,0 +1,31 @@
+{
+    "timestamp": "20250312_141401",
+    "window_size": 15,
+    "hop_size": 5,
+    "num_features": 12,
+    "num_classes": 96,
+    "hyperparameters": {
+        "conv_filters": [
+            64,
+            128,
+            256
+        ],
+        "conv_kernel_size": 5,
+        "pool_size": 2,
+        "use_bottleneck": false,
+        "bottleneck_size": 32,
+        "use_residual": true,
+        "use_attention": true,
+        "lstm_units": [
+            64
+        ],
+        "dense_units": [
+            128,
+            64
+        ],
+        "dropout_rate": 0.4,
+        "learning_rate": 0.0005
+    },
+    "final_val_accuracy": 0.22902312874794006,
+    "final_val_loss": 2.848902463912964
+}
